@@ -4,10 +4,9 @@ import sys
 from unittest.mock import MagicMock, call
 
 import pytest
-
-from tests.tools import skip_if_on_darwin, skip_if_on_windows
 from xonsh.completers.tools import RichCompletion
 from xonsh.parsers.completion_context import CompletionContext, PythonContext
+from xonsh.pytest.tools import skip_if_on_windows
 from xonsh.xontribs import find_xontrib
 
 
@@ -249,7 +248,6 @@ def test_special_tokens(jedi_xontrib):
     ) == {"$[", "${", "$("}
 
 
-@skip_if_on_darwin
 @skip_if_on_windows
 def test_no_command_path_completion(jedi_xontrib, completion_context_parse):
     assert jedi_xontrib.complete_jedi(completion_context_parse("./", 2)) is None
