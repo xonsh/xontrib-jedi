@@ -1,0 +1,73 @@
+
+[tool.poetry]
+name = "xontrib-jedi"
+version = "0.0.1"
+description = "Xonsh Python completions using jedi"
+authors = ["Xonsh Dev <xonsh@email.address>"]
+
+license = "MIT"
+readme = "README.md"
+
+repository = "https://github.com/xonsh/xontrib-jedi"
+keywords = ['xontrib', 'xonsh']
+classifiers = [
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Topic :: System :: Shells",
+    "Topic :: System :: System Shells",
+    "Topic :: Terminals",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+]
+
+
+packages = [{ include = "xontrib" }]
+
+[tool.poetry.urls]
+Documentation = "https://github.com/xonsh/xontrib-jedi/blob/master/README.md"
+Code = "https://github.com/xonsh/xontrib-jedi"
+"Issue tracker" = "https://github.com/xonsh/xontrib-jedi/issues"
+
+
+[tool.poetry.dependencies]
+python = ">=3.7"
+xonsh = ">=0.9.20"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.0"
+colorama = "*"
+arger = "*"
+black = { version = "^20.8b1", allow-prereleases = true }
+yapf = "^0.30.0" # can be used to format .xsh files with the special rules
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.isort]
+profile = "black"
+
+[tool.black]
+include = '\.pyi?$'
+force-exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.pytest_cache
+  | \.tox
+  | \.vscode
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | disk-cache.sqlite3
+)/
+'''
