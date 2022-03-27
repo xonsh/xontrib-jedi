@@ -44,7 +44,7 @@ jobs:
 #      run: poetry install --no-interaction --no-root
     - name: Install xontrib
       run: |
-        pip install jedi git+https://gitlab.com/xonsh/xonsh.git
+        pip install jedi git+https://github.com/xonsh/xonsh.git
         pip install .
     - name: Run tests
       run: |
