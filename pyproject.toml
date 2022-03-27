@@ -38,7 +38,7 @@ Code = "https://github.com/xonsh/xontrib-jedi"
 python = ">=3.7"
 jedi = ">=0.18.1"
 #xonsh = ">0.11"
-xonsh = {git = "https://github.com/xonsh/xonsh.git"}
+#xonsh = {url = "https://github.com/xonsh/xonsh/archive/main.zip"}
 
 [tool.poetry.dev-dependencies]
 pytest = ">6.0"
