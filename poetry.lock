@@ -170,7 +170,7 @@ description = "Python-powered, cross-platform, Unix-gazing shell"
 category = "main"
 optional = false
 python-versions = ">=3.7"
-develop = true
+develop = false
 
 [package.extras]
 full = ["prompt-toolkit (>=3.0.27)", "pyperclip", "pygments (>=2.2)", "gnureadline", "distro", "setproctitle"]
@@ -182,8 +182,10 @@ pygments = ["pygments (>=2.2)"]
 zipapp = ["importlib-resources"]
 
 [package.source]
-type = "directory"
-url = "../../xsh"
+type = "git"
+url = "https://github.com/xonsh/xonsh.git"
+reference = "HEAD"
+resolved_reference = "d004784621f7a36d31700e24cac623cf0bd3a78d"
 
 [[package]]
 name = "zipp"
@@ -200,7 +202,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7"
-content-hash = "6b69e9e4d0cbec54e1580249f1079545e380c6e0e2548ec8c75d79b0488ec512"
+content-hash = "db4f20f4acf3bdb6304f030ee4fb3e406fdf649fa04418a50baeb383abbb35f0"
 
 [metadata.files]
 atomicwrites = [
