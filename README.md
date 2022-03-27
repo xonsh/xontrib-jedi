@@ -1,5 +1,5 @@
 <p align="center">
-Xonsh Python completions using jedi
+Xonsh Python completions using <a href="https://jedi.readthedocs.io/en/latest/">jedi</a>.
 </p>
 
 <p align="center">  
