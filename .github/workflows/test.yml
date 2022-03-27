@@ -42,5 +42,7 @@ jobs:
     - name: Install dependencies
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
       run: poetry install --no-interaction
+    - name: Install Xonsh # we can remove this once xonsh with pytest plugin is released
+      run: poetry run pip install https://github.com/xonsh/xonsh/archive/main.zip
     - name: Run tests
       run: poetry run pytest

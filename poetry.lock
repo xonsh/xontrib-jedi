@@ -168,8 +168,9 @@ name = "xonsh"
 version = "0.11.0"
 description = "Python-powered, cross-platform, Unix-gazing shell"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.7"
+develop = false
 
 [package.extras]
 full = ["prompt-toolkit (>=3.0.27)", "pyperclip", "pygments (>=2.2)", "gnureadline", "distro", "setproctitle"]
@@ -181,8 +182,11 @@ pygments = ["pygments (>=2.2)"]
 zipapp = ["importlib-resources"]
 
 [package.source]
-type = "url"
-url = "https://github.com/xonsh/xonsh/archive/main.zip"
+type = "git"
+url = "https://github.com/xonsh/xonsh/"
+reference = "main"
+resolved_reference = "d004784621f7a36d31700e24cac623cf0bd3a78d"
+
 [[package]]
 name = "zipp"
 version = "3.7.0"
@@ -195,10 +199,13 @@ python-versions = ">=3.7"
 docs = ["sphinx", "jaraco.packaging (>=8.2)", "rst.linker (>=1.9)"]
 testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-cov", "pytest-enabler (>=1.0.1)", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy"]
 
+[extras]
+xonsh = ["xonsh"]
+
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7"
-content-hash = "c456f267ec1d76289311f581e31686d40d4d7cd930f18c80db83da547b6fa5b6"
+content-hash = "35dc91a7e6521c449282c7bba23cda165ea1d7ded4d9b609156653f9602b0a5e"
 
 [metadata.files]
 atomicwrites = [
