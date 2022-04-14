@@ -1,7 +1,7 @@
 
 [tool.poetry]
 name = "xontrib-jedi"
-version = "0.0.1"
+version = "0.0.2"
 description = "Improved Xonsh's Python completions using jedi"
 authors = ["Xonsh Dev <xonsh@email.address>"]
 
