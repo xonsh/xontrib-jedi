@@ -31,4 +31,6 @@ jobs:
     - name: Install dependencies
       run: poetry install
     - name: Run tests
-      run: poetry run pytest
+      run: |
+        poetry run xonsh -c "xontrib load mpl"
+        poetry run pytest
