@@ -20,22 +20,7 @@ xpip install xontrib-jedi
 
 ```bash
 xontrib load jedi
-# TODO: what's next?
 ```
-
-## Examples
-
-...
-
-## Known issues
-
-...
-
-## Releasing your package
-
-- Bump the version of your package.
-- Create a GitHub release (The release notes are automatically generated as a draft release after each push).
-- And publish with `poetry publish --build` or `twine`
 
 ## Credits
 
