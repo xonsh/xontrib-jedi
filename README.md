@@ -18,8 +18,11 @@ xpip install xontrib-jedi
 
 ## Usage
 
-```bash
+```xsh
 xontrib load jedi
+
+import json
+json.<Tab>
 ```
 
 ## Credits
