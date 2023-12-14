@@ -1,7 +1,7 @@
 """Use Jedi as xonsh's python completer."""
 import os
 
-import xonsh
+import xonsh.completers.base
 from xonsh.built_ins import XSH
 from xonsh.completers import _aliases
 from xonsh.completers.tools import (
