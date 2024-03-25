@@ -1,4 +1,5 @@
 """Tests for the Jedi completer xontrib"""
+
 import importlib
 import sys
 from unittest.mock import MagicMock, call
