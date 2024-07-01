@@ -1,4 +1,5 @@
 """Use Jedi as xonsh's python completer."""
+
 import os
 
 import xonsh.completers.base
