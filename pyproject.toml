@@ -37,7 +37,7 @@ Code = "https://github.com/xonsh/xontrib-jedi"
 [tool.poetry.dependencies]
 python = ">=3.7"
 jedi = ">=0.18.1"
-xonsh = ">=0.12"
+xonsh = ">=0.17"
 
 [tool.poetry.dev-dependencies]
 pytest = ">6.0"
@@ -46,25 +46,16 @@ pytest = ">6.0"
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
-
-[tool.isort]
-profile = "black"
-
-[tool.black]
-include = '\.pyi?$'
-force-exclude = '''
-/(
-    \.git
-  | \.hg
-  | \.mypy_cache
-  | \.pytest_cache
-  | \.tox
-  | \.vscode
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-  | disk-cache.sqlite3
-)/
-'''
+[tool.ruff.lint]
+select = [
+    "B", # https://beta.ruff.rs/docs/rules/#flake8-bugbear-b
+    "D", # https://beta.ruff.rs/docs/rules/#pydocstyle-d
+    "E", # https://beta.ruff.rs/docs/rules/#pycodestyle-e-w
+    "F", # https://beta.ruff.rs/docs/rules/#pyflakes-f
+    "I", # https://beta.ruff.rs/docs/rules/#isort-i
+    "T10", # https://beta.ruff.rs/docs/rules/#flake8-debugger-t10
+    "TID", # https://docs.astral.sh/ruff/rules/#flake8-tidy-imports-tid
+    "YTT", # https://beta.ruff.rs/docs/rules/#flake8-2020-ytt
+    "W", # https://beta.ruff.rs/docs/rules/#pycodestyle-e-w
+    "UP", # https://beta.ruff.rs/docs/rules/#pyupgrade-up
+]
