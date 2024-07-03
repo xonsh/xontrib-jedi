@@ -16,6 +16,8 @@ __all__ = ()
 
 import jedi
 import jedi.settings as jsettings
+from jedi.api.classes import Completion
+
 
 @lazyobject
 def XONSH_SPECIAL_TOKENS():
@@ -73,7 +75,7 @@ def complete_jedi(context: CompletionContext):
 
     extra_ctx = {"__xonsh__": XSH}
     try:
-        extra_ctx["_"] = _
+        extra_ctx["_"] = _  # type: ignore
     except NameError:
         pass
 
@@ -100,7 +102,7 @@ def complete_jedi(context: CompletionContext):
     return res
 
 
-def should_complete(comp: jedi.api.classes.Completion):
+def should_complete(comp: Completion):
     """Make sure _* names are completed only when
     the user writes the first underscore
     """
@@ -112,7 +114,7 @@ def should_complete(comp: jedi.api.classes.Completion):
     return completion and len(completion) <= len(name) - 1
 
 
-def create_completion(comp: jedi.api.classes.Completion):
+def create_completion(comp: Completion):
     """Create a RichCompletion from a Jedi Completion object"""
     comp_type = None
     description = None
