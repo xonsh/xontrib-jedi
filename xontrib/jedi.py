@@ -15,7 +15,6 @@ from xonsh.parsers.completion_context import CompletionContext
 __all__ = ()
 
 import jedi
-import jedi.settings as jsettings
 from jedi.api.classes import Completion
 
 
@@ -62,7 +61,7 @@ def complete_jedi(context: CompletionContext):
             return None
 
     filter_func = get_filter_function()
-    jsettings.case_insensitive_completion = not XSH.env.get(
+    settings.case_insensitive_completion = not XSH.env.get(
         "CASE_SENSITIVE_COMPLETIONS"
     )
 
