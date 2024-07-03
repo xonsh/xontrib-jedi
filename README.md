@@ -25,6 +25,11 @@ import json
 json.<Tab>
 ```
 
+## Release
+
+- update the version in `pyproject.toml`
+- Create a new release with the same tag using Github releases
+
 ## Credits
 
 This package was created with [xontrib cookiecutter template](https://github.com/xonsh/xontrib-cookiecutter).
