@@ -16,6 +16,7 @@ __all__ = ()
 
 import jedi
 
+
 @lazyobject
 def XONSH_SPECIAL_TOKENS():
     return {
