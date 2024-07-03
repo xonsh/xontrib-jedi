@@ -1,7 +1,6 @@
 """Use Jedi as xonsh's python completer."""
 import os
 
-import xonsh.completers.base
 from xonsh.built_ins import XSH
 from xonsh.completers import _aliases
 from xonsh.completers.tools import (
@@ -18,13 +17,6 @@ __all__ = ()
 # if jedi isn't installed
 import jedi
 
-
-@lazybool
-def JEDI_NEW_API():
-    if hasattr(jedi, "__version__"):
-        return tuple(map(int, jedi.__version__.split("."))) >= (0, 16, 0)
-    else:
-        return False
 
 
 @lazyobject
@@ -87,17 +79,11 @@ def complete_jedi(context: CompletionContext):
     except NameError:
         pass
 
-    if JEDI_NEW_API:
-        script = jedi.Interpreter(source, [ctx, extra_ctx])
-    else:
-        script = jedi.Interpreter(source, [ctx, extra_ctx], line=row, column=column)
-
+    script = jedi.Interpreter(source, [ctx, extra_ctx])
+    
     script_comp = set()
     try:
-        if JEDI_NEW_API:
-            script_comp = script.complete(row, column)
-        else:
-            script_comp = script.completions()
+        script_comp = script.complete(row, column)
     except Exception:
         pass
 
@@ -158,9 +144,6 @@ def create_completion(comp: jedi.api.classes.Completion):
         prefix_len=prefix_len,
     )
 
-
-# monkey-patch the original python completer in 'base'.
-xonsh.completers.base.complete_python = complete_jedi
 
 # Jedi ignores leading '@(' and friends
 _aliases._add_one_completer("jedi_python", complete_jedi, "<python")
