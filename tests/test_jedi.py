@@ -54,13 +54,7 @@ def test_completer_added(jedi_xontrib, xession):
         CompletionContext(python=PythonContext("10 + x", 6)),
     ],
 )
-@pytest.mark.parametrize("version", ["new", "old"])
-def test_jedi_api(jedi_xontrib, jedi_mock, version, context, xession):
-    if version == "old":
-        jedi_mock.__version__ = "0.15.0"
-        jedi_mock.Interpreter().completions.return_value = []
-        jedi_mock.reset_mock()
-
+def test_jedi_api(jedi_xontrib, jedi_mock, context, xession):
     jedi_xontrib.complete_jedi(context)
 
     extra_namespace = {"__xonsh__": xession}
@@ -72,14 +66,9 @@ def test_jedi_api(jedi_xontrib, jedi_mock, version, context, xession):
 
     line = context.python.multiline_code
     end = context.python.cursor_index
-    if version == "new":
-        assert jedi_mock.Interpreter.call_args_list == [call(line, namespaces)]
-        assert jedi_mock.Interpreter().complete.call_args_list == [call(1, end)]
-    else:
-        assert jedi_mock.Interpreter.call_args_list == [
-            call(line, namespaces, line=1, column=end)
-        ]
-        assert jedi_mock.Interpreter().completions.call_args_list == [call()]
+
+    assert jedi_mock.Interpreter.call_args_list == [call(line, namespaces)]
+    assert jedi_mock.Interpreter().complete.call_args_list == [call(1, end)]
 
 
 def test_multiline(jedi_xontrib, jedi_mock, monkeypatch):
