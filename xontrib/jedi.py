@@ -61,9 +61,7 @@ def complete_jedi(context: CompletionContext):
             return None
 
     filter_func = get_filter_function()
-    settings.case_insensitive_completion = not XSH.env.get(
-        "CASE_SENSITIVE_COMPLETIONS"
-    )
+    settings.case_insensitive_completion = not XSH.env.get("CASE_SENSITIVE_COMPLETIONS")
 
     source = context.python.multiline_code
     index = context.python.cursor_index
