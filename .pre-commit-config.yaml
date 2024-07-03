@@ -11,7 +11,7 @@ repos:
         args: [., --fix, --exit-non-zero-on-fix]
         pass_filenames: false
       - id: ruff-format
-        args: ["xonsh", "xontrib", "tests", "xompletions"]
+        args: [.]
         pass_filenames: false
 
   - repo: https://github.com/pre-commit/mirrors-mypy
@@ -19,8 +19,7 @@ repos:
     hooks:
       - id: mypy
         pass_filenames: false
-        additional_dependencies:
-          - types-ujson
+        args: ['xontrib']
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
