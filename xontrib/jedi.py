@@ -1,4 +1,5 @@
 """Use Jedi as xonsh's python completer."""
+
 import os
 
 from xonsh.built_ins import XSH
@@ -8,7 +9,7 @@ from xonsh.completers.tools import (
     contextual_completer,
     get_filter_function,
 )
-from xonsh.lazyasd import lazybool, lazyobject
+from xonsh.lazyasd import lazyobject
 from xonsh.parsers.completion_context import CompletionContext
 
 __all__ = ()
@@ -16,7 +17,6 @@ __all__ = ()
 # an error will be printed in xontribs
 # if jedi isn't installed
 import jedi
-
 
 
 @lazyobject
@@ -80,7 +80,7 @@ def complete_jedi(context: CompletionContext):
         pass
 
     script = jedi.Interpreter(source, [ctx, extra_ctx])
-    
+
     script_comp = set()
     try:
         script_comp = script.complete(row, column)
@@ -103,8 +103,7 @@ def complete_jedi(context: CompletionContext):
 
 
 def should_complete(comp: jedi.api.classes.Completion):
-    """
-    make sure _* names are completed only when
+    """Make sure _* names are completed only when
     the user writes the first underscore
     """
     name = comp.name
