@@ -10,6 +10,7 @@ from xonsh.parsers.completion_context import CompletionContext, PythonContext
 from xonsh.pytest.tools import skip_if_on_windows
 from xonsh.xontribs import find_xontrib
 
+# test
 
 @pytest.fixture
 def jedi_mock(monkeypatch):
