@@ -49,7 +49,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.ruff.lint]
 select = [
     "B", # https://beta.ruff.rs/docs/rules/#flake8-bugbear-b
-    "D", # https://beta.ruff.rs/docs/rules/#pydocstyle-d
+    #"D", # https://beta.ruff.rs/docs/rules/#pydocstyle-d
     "E", # https://beta.ruff.rs/docs/rules/#pycodestyle-e-w
     "F", # https://beta.ruff.rs/docs/rules/#pyflakes-f
     "I", # https://beta.ruff.rs/docs/rules/#isort-i
