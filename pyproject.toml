@@ -36,7 +36,7 @@ Code = "https://github.com/xonsh/xontrib-jedi"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
-jedi = ">=0.18.1"
+jedi = ">=0.19"
 xonsh = ">=0.17"
 
 [tool.poetry.dev-dependencies]
