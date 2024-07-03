@@ -59,3 +59,6 @@ select = [
     "W", # https://beta.ruff.rs/docs/rules/#pycodestyle-e-w
     "UP", # https://beta.ruff.rs/docs/rules/#pyupgrade-up
 ]
+ignore = [
+    "E501", # line length
+]
