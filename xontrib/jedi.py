@@ -14,10 +14,8 @@ from xonsh.parsers.completion_context import CompletionContext
 
 __all__ = ()
 
-# an error will be printed in xontribs
-# if jedi isn't installed
 import jedi
-
+import jedi.settings as jsettings
 
 @lazyobject
 def XONSH_SPECIAL_TOKENS():
@@ -62,7 +60,7 @@ def complete_jedi(context: CompletionContext):
             return None
 
     filter_func = get_filter_function()
-    jedi.settings.case_insensitive_completion = not XSH.env.get(
+    jsettings.case_insensitive_completion = not XSH.env.get(
         "CASE_SENSITIVE_COMPLETIONS"
     )
 
