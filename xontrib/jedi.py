@@ -1,5 +1,7 @@
 """Use Jedi as xonsh's python completer."""
 
+# mypy: disable-error-code="attr-defined,name-defined"
+
 import os
 
 from xonsh.built_ins import XSH
