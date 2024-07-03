@@ -19,7 +19,7 @@ repos:
     hooks:
       - id: mypy
         pass_filenames: false
-        args: ['xontrib']
+        args: ['xontrib', '--ignore-missing-imports']
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
