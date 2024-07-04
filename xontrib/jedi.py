@@ -5,13 +5,13 @@
 import os
 
 from xonsh.built_ins import XSH
-from xonsh.completers import _aliases
+from xonsh.completers import completer
 from xonsh.completers.tools import (
     RichCompletion,
     contextual_completer,
     get_filter_function,
 )
-from xonsh.lazyasd import lazyobject
+
 from xonsh.parsers.completion_context import CompletionContext
 
 __all__ = ()
@@ -19,9 +19,7 @@ __all__ = ()
 import jedi
 
 
-@lazyobject
-def XONSH_SPECIAL_TOKENS():
-    return {
+XONSH_SPECIAL_TOKENS = {
         "?",
         "??",
         "$(",
@@ -35,9 +33,7 @@ def XONSH_SPECIAL_TOKENS():
     }
 
 
-@lazyobject
-def XONSH_SPECIAL_TOKENS_FIRST():
-    return {tok[0] for tok in XONSH_SPECIAL_TOKENS}
+XONSH_SPECIAL_TOKENS_FIRST = {tok[0] for tok in XONSH_SPECIAL_TOKENS}
 
 
 @contextual_completer
@@ -145,5 +141,5 @@ def create_completion(comp: jedi.api.classes.Completion):
 
 
 # Jedi ignores leading '@(' and friends
-_aliases._add_one_completer("jedi_python", complete_jedi, "<python")
-_aliases._remove_completer(["python"])
+completer.add_one_completer("jedi_python", complete_jedi, "<python")
+completer.remove_completer("python")
