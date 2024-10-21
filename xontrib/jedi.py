@@ -11,26 +11,24 @@ from xonsh.completers.tools import (
     contextual_completer,
     get_filter_function,
 )
-
 from xonsh.parsers.completion_context import CompletionContext
 
 __all__ = ()
 
 import jedi
 
-
 XONSH_SPECIAL_TOKENS = {
-        "?",
-        "??",
-        "$(",
-        "${",
-        "$[",
-        "![",
-        "!(",
-        "@(",
-        "@$(",
-        "@",
-    }
+    "?",
+    "??",
+    "$(",
+    "${",
+    "$[",
+    "![",
+    "!(",
+    "@(",
+    "@$(",
+    "@",
+}
 
 
 XONSH_SPECIAL_TOKENS_FIRST = {tok[0] for tok in XONSH_SPECIAL_TOKENS}
