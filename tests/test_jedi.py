@@ -5,6 +5,7 @@ import sys
 from unittest.mock import MagicMock, call
 
 import pytest
+import xonsh.completers.tools as tools
 from xonsh.completers.tools import RichCompletion
 from xonsh.parsers.completion_context import CompletionContext, PythonContext
 from xonsh.pytest.tools import skip_if_on_windows
@@ -57,7 +58,10 @@ def test_completer_added(jedi_xontrib, xession):
 def test_jedi_api(jedi_xontrib, jedi_mock, context, xession):
     jedi_xontrib.complete_jedi(context)
 
-    extra_namespace = {"__xonsh__": xession}
+    extra_namespace = {
+        "__xonsh__": xession,
+        jedi_xontrib.JEDI_CAPTURED_STDOUT_PLACEHOLDER: "",
+    }
     try:
         extra_namespace["_"] = _
     except NameError:
@@ -83,6 +87,91 @@ def test_multiline(jedi_xontrib, jedi_mock, monkeypatch):
     assert jedi_mock.Interpreter().complete.call_args_list == [
         call(2, 5)  # line (one-indexed), column (zero-indexed)
     ]
+
+
+@pytest.mark.parametrize(
+    "source,cursor_index,expected_source,expected_index",
+    [
+        (
+            "$(echo hi).split",
+            len("$(echo hi).split"),
+            "__xonsh_jedi_stdout__.split",
+            len("__xonsh_jedi_stdout__.split"),
+        ),
+        (
+            "x = $(echo hi)\n$(pwd).split",
+            len("x = $(echo hi)\n$(pwd).split"),
+            "x = __xonsh_jedi_stdout__\n__xonsh_jedi_stdout__.split",
+            len("x = __xonsh_jedi_stdout__\n__xonsh_jedi_stdout__.split"),
+        ),
+        (
+            "$(echo \"a)b\").spl",
+            len("$(echo \"a)b\").spl"),
+            "__xonsh_jedi_stdout__.spl",
+            len("__xonsh_jedi_stdout__.spl"),
+        ),
+    ],
+)
+def test_rewrite_captured_stdout_subexprs(
+    jedi_xontrib, source, cursor_index, expected_source, expected_index
+):
+    transformed_source, transformed_index = jedi_xontrib._rewrite_captured_stdout_subexprs(
+        source, cursor_index
+    )
+    assert transformed_source == expected_source
+    assert transformed_index == expected_index
+
+
+def test_jedi_api_rewrites_captured_stdout_as_string(jedi_xontrib, jedi_mock, xession):
+    source = "$(echo hi).spl"
+    context = CompletionContext(python=PythonContext(source, len(source)))
+
+    jedi_xontrib.complete_jedi(context)
+
+    extra_namespace = {
+        "__xonsh__": xession,
+        jedi_xontrib.JEDI_CAPTURED_STDOUT_PLACEHOLDER: "",
+    }
+    try:
+        extra_namespace["_"] = _
+    except NameError:
+        pass
+    namespaces = [{}, extra_namespace]
+
+    assert jedi_mock.Interpreter.call_args_list == [
+        call("__xonsh_jedi_stdout__.spl", namespaces)
+    ]
+    assert jedi_mock.Interpreter().complete.call_args_list == [call(1, 25)]
+
+
+def test_complete_jedi_offers_string_methods_for_captured_stdout(
+    jedi_xontrib, jedi_mock, monkeypatch
+):
+    monkeypatch.setattr(tools, "get_filter_function", lambda: (lambda *_: True))
+    monkeypatch.setattr(jedi_xontrib, "get_filter_function", lambda: (lambda *_: True))
+
+    comp_mock = MagicMock()
+    comp_mock.type = "function"
+    comp_mock.name = "splitlines"
+    comp_mock.complete = "itlines"
+    sig_mock = MagicMock()
+    sig_mock.to_string.return_value = "splitlines(keepends=False)"
+    comp_mock.get_signatures.return_value = [sig_mock]
+    comp_mock.infer.return_value = []
+
+    jedi_xontrib.XONSH_SPECIAL_TOKENS = []
+    jedi_mock.Interpreter().complete.return_value = [comp_mock]
+
+    completions = jedi_xontrib.complete_jedi(
+        CompletionContext(python=PythonContext("$(echo hi).spl", 14))
+    )
+
+    assert RichCompletion(
+        "splitlines",
+        display="splitlines()",
+        description="splitlines(keepends=False)",
+        prefix_len=3,
+    ) in completions
 
 
 @pytest.mark.parametrize(

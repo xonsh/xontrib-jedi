@@ -33,6 +33,73 @@ XONSH_SPECIAL_TOKENS = {
 
 XONSH_SPECIAL_TOKENS_FIRST = {tok[0] for tok in XONSH_SPECIAL_TOKENS}
 
+JEDI_CAPTURED_STDOUT_PLACEHOLDER = "__xonsh_jedi_stdout__"
+
+
+def _find_captured_stdout_closing_paren(source, start):
+    quote = None
+    depth = 1
+    index = start + 2
+
+    while index < len(source):
+        if quote is not None:
+            if quote in ("'", '"') and source[index] == "\\":
+                index += 2
+                continue
+            if source.startswith(quote, index):
+                index += len(quote)
+                quote = None
+                continue
+            index += 1
+            continue
+
+        if source.startswith("'''", index) or source.startswith('"""', index):
+            quote = source[index : index + 3]
+            index += 3
+            continue
+
+        char = source[index]
+        if char in ("'", '"'):
+            quote = char
+            index += 1
+            continue
+        if source.startswith("$(", index) or source.startswith("@(", index) or source.startswith("!(", index):
+            depth += 1
+            index += 2
+            continue
+        if char == "(":
+            depth += 1
+        elif char == ")":
+            depth -= 1
+            if depth == 0:
+                return index
+        index += 1
+
+    return None
+
+
+def _rewrite_captured_stdout_subexprs(source, cursor_index):
+    rewritten = []
+    transformed_index = 0
+    index = 0
+
+    while index < len(source):
+        if source.startswith("$(", index):
+            closing = _find_captured_stdout_closing_paren(source, index)
+            if closing is not None:
+                rewritten.append(JEDI_CAPTURED_STDOUT_PLACEHOLDER)
+                if cursor_index > index:
+                    transformed_index += len(JEDI_CAPTURED_STDOUT_PLACEHOLDER)
+                index = closing + 1
+                continue
+
+        rewritten.append(source[index])
+        if index < cursor_index:
+            transformed_index += 1
+        index += 1
+
+    return "".join(rewritten), transformed_index
+
 
 @contextual_completer
 def complete_jedi(context: CompletionContext):
@@ -62,12 +129,13 @@ def complete_jedi(context: CompletionContext):
 
     source = context.python.multiline_code
     index = context.python.cursor_index
+    source, index = _rewrite_captured_stdout_subexprs(source, index)
     row = source.count("\n", 0, index) + 1
     column = (
         index - source.rfind("\n", 0, index) - 1
     )  # will be `index - (-1) - 1` if there's no newline
 
-    extra_ctx = {"__xonsh__": XSH}
+    extra_ctx = {"__xonsh__": XSH, JEDI_CAPTURED_STDOUT_PLACEHOLDER: ""}
     try:
         extra_ctx["_"] = _
     except NameError:
