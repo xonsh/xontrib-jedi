@@ -60,7 +60,7 @@ def test_jedi_api(jedi_xontrib, jedi_mock, context, xession):
 
     extra_namespace = {
         "__xonsh__": xession,
-        jedi_xontrib.JEDI_CAPTURED_STDOUT_PLACEHOLDER: "",
+        **jedi_xontrib._JEDI_PLACEHOLDER_VALUES,
     }
     try:
         extra_namespace["_"] = _
@@ -110,27 +110,54 @@ def test_multiline(jedi_xontrib, jedi_mock, monkeypatch):
             "__xonsh_jedi_stdout__.spl",
             len("__xonsh_jedi_stdout__.spl"),
         ),
+        (
+            "!(echo hi).out",
+            len("!(echo hi).out"),
+            "__xonsh_jedi_object__.out",
+            len("__xonsh_jedi_object__.out"),
+        ),
+        (
+            "![echo hi].rtn",
+            len("![echo hi].rtn"),
+            "__xonsh_jedi_hiddenobject__.rtn",
+            len("__xonsh_jedi_hiddenobject__.rtn"),
+        ),
+        (
+            "![echo a[1]].out",
+            len("![echo a[1]].out"),
+            "__xonsh_jedi_hiddenobject__.out",
+            len("__xonsh_jedi_hiddenobject__.out"),
+        ),
     ],
 )
-def test_rewrite_captured_stdout_subexprs(
+def test_rewrite_xonsh_subexprs(
     jedi_xontrib, source, cursor_index, expected_source, expected_index
 ):
-    transformed_source, transformed_index = jedi_xontrib._rewrite_captured_stdout_subexprs(
+    transformed_source, transformed_index = jedi_xontrib._rewrite_xonsh_subexprs(
         source, cursor_index
     )
     assert transformed_source == expected_source
     assert transformed_index == expected_index
 
 
-def test_jedi_api_rewrites_captured_stdout_as_string(jedi_xontrib, jedi_mock, xession):
-    source = "$(echo hi).spl"
+@pytest.mark.parametrize(
+    "source,expected_rewritten",
+    [
+        ("$(echo hi).spl", "__xonsh_jedi_stdout__.spl"),
+        ("!(echo hi).out", "__xonsh_jedi_object__.out"),
+        ("![echo hi].rtn", "__xonsh_jedi_hiddenobject__.rtn"),
+    ],
+)
+def test_jedi_api_rewrites_subexprs(
+    jedi_xontrib, jedi_mock, xession, source, expected_rewritten
+):
     context = CompletionContext(python=PythonContext(source, len(source)))
 
     jedi_xontrib.complete_jedi(context)
 
     extra_namespace = {
         "__xonsh__": xession,
-        jedi_xontrib.JEDI_CAPTURED_STDOUT_PLACEHOLDER: "",
+        **jedi_xontrib._JEDI_PLACEHOLDER_VALUES,
     }
     try:
         extra_namespace["_"] = _
@@ -139,9 +166,11 @@ def test_jedi_api_rewrites_captured_stdout_as_string(jedi_xontrib, jedi_mock, xe
     namespaces = [{}, extra_namespace]
 
     assert jedi_mock.Interpreter.call_args_list == [
-        call("__xonsh_jedi_stdout__.spl", namespaces)
+        call(expected_rewritten, namespaces)
     ]
-    assert jedi_mock.Interpreter().complete.call_args_list == [call(1, 25)]
+    assert jedi_mock.Interpreter().complete.call_args_list == [
+        call(1, len(expected_rewritten))
+    ]
 
 
 def test_complete_jedi_offers_string_methods_for_captured_stdout(

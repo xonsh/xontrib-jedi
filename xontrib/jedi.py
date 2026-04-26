@@ -12,6 +12,7 @@ from xonsh.completers.tools import (
     get_filter_function,
 )
 from xonsh.parsers.completion_context import CompletionContext
+from xonsh.procs.pipelines import CommandPipeline, HiddenCommandPipeline
 
 __all__ = ()
 
@@ -34,12 +35,43 @@ XONSH_SPECIAL_TOKENS = {
 XONSH_SPECIAL_TOKENS_FIRST = {tok[0] for tok in XONSH_SPECIAL_TOKENS}
 
 JEDI_CAPTURED_STDOUT_PLACEHOLDER = "__xonsh_jedi_stdout__"
+JEDI_CAPTURED_OBJECT_PLACEHOLDER = "__xonsh_jedi_object__"
+JEDI_CAPTURED_HIDDENOBJECT_PLACEHOLDER = "__xonsh_jedi_hiddenobject__"
+
+# (opening token, closing char, placeholder name) for each xonsh subexpression
+# form that Jedi needs to see as a typed Python value. ``![`` must come before
+# ``!(`` so the longer prefix wins.
+_JEDI_SUBEXPR_FORMS = (
+    ("$(", ")", JEDI_CAPTURED_STDOUT_PLACEHOLDER),
+    ("![", "]", JEDI_CAPTURED_HIDDENOBJECT_PLACEHOLDER),
+    ("!(", ")", JEDI_CAPTURED_OBJECT_PLACEHOLDER),
+)
 
 
-def _find_captured_stdout_closing_paren(source, start):
+def _make_jedi_placeholder(cls):
+    """Build an uninitialized instance of ``cls`` for Jedi to introspect."""
+    return cls.__new__(cls)
+
+
+_JEDI_PLACEHOLDER_VALUES = {
+    JEDI_CAPTURED_STDOUT_PLACEHOLDER: "",
+    JEDI_CAPTURED_OBJECT_PLACEHOLDER: _make_jedi_placeholder(CommandPipeline),
+    JEDI_CAPTURED_HIDDENOBJECT_PLACEHOLDER: _make_jedi_placeholder(
+        HiddenCommandPipeline
+    ),
+}
+
+
+def _find_subexpr_close(source, start, open_tok, close_char):
+    """Find the index of ``close_char`` that closes the subexpression at ``start``.
+
+    Tracks balancing of the same delimiter pair as ``open_tok`` and skips quoted
+    strings. Returns ``None`` if the subexpression is unclosed.
+    """
+    open_char = open_tok[-1]
     quote = None
     depth = 1
-    index = start + 2
+    index = start + len(open_tok)
 
     while index < len(source):
         if quote is not None:
@@ -63,13 +95,9 @@ def _find_captured_stdout_closing_paren(source, start):
             quote = char
             index += 1
             continue
-        if source.startswith("$(", index) or source.startswith("@(", index) or source.startswith("!(", index):
+        if char == open_char:
             depth += 1
-            index += 2
-            continue
-        if char == "(":
-            depth += 1
-        elif char == ")":
+        elif char == close_char:
             depth -= 1
             if depth == 0:
                 return index
@@ -78,20 +106,31 @@ def _find_captured_stdout_closing_paren(source, start):
     return None
 
 
-def _rewrite_captured_stdout_subexprs(source, cursor_index):
+def _rewrite_xonsh_subexprs(source, cursor_index):
+    """Rewrite ``$()``/``!()``/``![]`` subexpressions to typed Jedi placeholders.
+
+    Returns ``(transformed_source, transformed_cursor_index)``.
+    """
     rewritten = []
     transformed_index = 0
     index = 0
+    n = len(source)
 
-    while index < len(source):
-        if source.startswith("$(", index):
-            closing = _find_captured_stdout_closing_paren(source, index)
-            if closing is not None:
-                rewritten.append(JEDI_CAPTURED_STDOUT_PLACEHOLDER)
-                if cursor_index > index:
-                    transformed_index += len(JEDI_CAPTURED_STDOUT_PLACEHOLDER)
-                index = closing + 1
-                continue
+    while index < n:
+        match = None
+        for open_tok, close_char, placeholder in _JEDI_SUBEXPR_FORMS:
+            if source.startswith(open_tok, index):
+                closing = _find_subexpr_close(source, index, open_tok, close_char)
+                if closing is not None:
+                    match = (placeholder, closing)
+                break
+        if match is not None:
+            placeholder, closing = match
+            rewritten.append(placeholder)
+            if cursor_index > index:
+                transformed_index += len(placeholder)
+            index = closing + 1
+            continue
 
         rewritten.append(source[index])
         if index < cursor_index:
@@ -129,13 +168,13 @@ def complete_jedi(context: CompletionContext):
 
     source = context.python.multiline_code
     index = context.python.cursor_index
-    source, index = _rewrite_captured_stdout_subexprs(source, index)
+    source, index = _rewrite_xonsh_subexprs(source, index)
     row = source.count("\n", 0, index) + 1
     column = (
         index - source.rfind("\n", 0, index) - 1
     )  # will be `index - (-1) - 1` if there's no newline
 
-    extra_ctx = {"__xonsh__": XSH, JEDI_CAPTURED_STDOUT_PLACEHOLDER: ""}
+    extra_ctx = {"__xonsh__": XSH, **_JEDI_PLACEHOLDER_VALUES}
     try:
         extra_ctx["_"] = _
     except NameError:
