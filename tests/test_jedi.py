@@ -105,8 +105,8 @@ def test_multiline(jedi_xontrib, jedi_mock, monkeypatch):
             len("x = __dummy_str__\n__dummy_str__.split"),
         ),
         (
-            "$(echo \"a)b\").spl",
-            len("$(echo \"a)b\").spl"),
+            '$(echo "a)b").spl',
+            len('$(echo "a)b").spl'),
             "__dummy_str__.spl",
             len("__dummy_str__.spl"),
         ),
@@ -251,12 +251,15 @@ def test_complete_jedi_offers_string_methods_for_captured_stdout(
         CompletionContext(python=PythonContext("$(echo hi).spl", 14))
     )
 
-    assert RichCompletion(
-        "splitlines",
-        display="splitlines()",
-        description="splitlines(keepends=False)",
-        prefix_len=3,
-    ) in completions
+    assert (
+        RichCompletion(
+            "splitlines",
+            display="splitlines()",
+            description="splitlines(keepends=False)",
+            prefix_len=3,
+        )
+        in completions
+    )
 
 
 @pytest.mark.parametrize(
