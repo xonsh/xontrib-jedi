@@ -46,6 +46,7 @@ DUMMY_DICT = "__dummy_dict__"
 DUMMY_LIST_DICT = "__dummy_list_dict__"
 DUMMY_COMMAND_PIPELINE = "__dummy_CommandPipeline__"
 DUMMY_HIDDEN_COMMAND_PIPELINE = "__dummy_HiddenCommandPipeline__"
+DUMMY_NONE = "__dummy_None__"
 
 
 def _make_jedi_placeholder(cls):
@@ -62,6 +63,7 @@ _JEDI_PLACEHOLDER_VALUES = {
     DUMMY_LIST_DICT: [{}],
     DUMMY_COMMAND_PIPELINE: _make_jedi_placeholder(CommandPipeline),
     DUMMY_HIDDEN_COMMAND_PIPELINE: _make_jedi_placeholder(HiddenCommandPipeline),
+    DUMMY_NONE: None,
 }
 
 # Xonsh ``$(...)`` command decorators that change the captured return type,
@@ -106,11 +108,12 @@ def _detect_captured_stdout_placeholder(source, inner_start, inner_end):
 
 # (opening token, closing char, fixed placeholder name or None).
 # A ``None`` placeholder means it is resolved dynamically from ``$(@...)``
-# decorators. ``![`` must come before ``!(`` so the longer prefix wins.
+# decorators.
 _JEDI_SUBEXPR_FORMS = (
     ("$(", ")", None),
-    ("![", "]", DUMMY_HIDDEN_COMMAND_PIPELINE),
     ("!(", ")", DUMMY_COMMAND_PIPELINE),
+    ("$[", "]", DUMMY_NONE),
+    ("![", "]", DUMMY_HIDDEN_COMMAND_PIPELINE),
 )
 
 

@@ -176,6 +176,12 @@ def test_multiline(jedi_xontrib, jedi_mock, monkeypatch):
             "__dummy_str__.spl",
             len("__dummy_str__.spl"),
         ),
+        (
+            "$[ls /].x",
+            len("$[ls /].x"),
+            "__dummy_None__.x",
+            len("__dummy_None__.x"),
+        ),
     ],
 )
 def test_rewrite_xonsh_subexprs(
