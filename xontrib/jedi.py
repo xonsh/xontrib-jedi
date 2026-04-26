@@ -125,14 +125,14 @@ def create_completion(comp: jedi.api.classes.Completion):
             comp_type = inf[0].type
             description = inf[0].description
 
-    display = comp.name + ("()" if comp_type == "function" else "")
+    completion = comp.name + ("(" if comp_type == "function" else "")
     description = description or comp.type
 
     prefix_len = len(comp.name) - len(comp.complete)
 
     return RichCompletion(
-        comp.name,
-        display=display,
+        completion,
+        display=completion,
         description=description,
         prefix_len=prefix_len,
     )
