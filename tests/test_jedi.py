@@ -5,6 +5,7 @@ import sys
 from unittest.mock import MagicMock, call
 
 import pytest
+import xonsh.completers.tools as tools
 from xonsh.completers.tools import RichCompletion
 from xonsh.parsers.completion_context import CompletionContext, PythonContext
 from xonsh.pytest.tools import skip_if_on_windows
@@ -57,7 +58,10 @@ def test_completer_added(jedi_xontrib, xession):
 def test_jedi_api(jedi_xontrib, jedi_mock, context, xession):
     jedi_xontrib.complete_jedi(context)
 
-    extra_namespace = {"__xonsh__": xession}
+    extra_namespace = {
+        "__xonsh__": xession,
+        **jedi_xontrib._JEDI_PLACEHOLDER_VALUES,
+    }
     try:
         extra_namespace["_"] = _
     except NameError:
@@ -83,6 +87,179 @@ def test_multiline(jedi_xontrib, jedi_mock, monkeypatch):
     assert jedi_mock.Interpreter().complete.call_args_list == [
         call(2, 5)  # line (one-indexed), column (zero-indexed)
     ]
+
+
+@pytest.mark.parametrize(
+    "source,cursor_index,expected_source,expected_index",
+    [
+        (
+            "$(echo hi).split",
+            len("$(echo hi).split"),
+            "__dummy_str__.split",
+            len("__dummy_str__.split"),
+        ),
+        (
+            "x = $(echo hi)\n$(pwd).split",
+            len("x = $(echo hi)\n$(pwd).split"),
+            "x = __dummy_str__\n__dummy_str__.split",
+            len("x = __dummy_str__\n__dummy_str__.split"),
+        ),
+        (
+            '$(echo "a)b").spl',
+            len('$(echo "a)b").spl'),
+            "__dummy_str__.spl",
+            len("__dummy_str__.spl"),
+        ),
+        (
+            "!(echo hi).out",
+            len("!(echo hi).out"),
+            "__dummy_CommandPipeline__.out",
+            len("__dummy_CommandPipeline__.out"),
+        ),
+        (
+            "![echo hi].rtn",
+            len("![echo hi].rtn"),
+            "__dummy_HiddenCommandPipeline__.rtn",
+            len("__dummy_HiddenCommandPipeline__.rtn"),
+        ),
+        (
+            "![echo a[1]].out",
+            len("![echo a[1]].out"),
+            "__dummy_HiddenCommandPipeline__.out",
+            len("__dummy_HiddenCommandPipeline__.out"),
+        ),
+        (
+            "$(@lines ls /).append",
+            len("$(@lines ls /).append"),
+            "__dummy_list_str__.append",
+            len("__dummy_list_str__.append"),
+        ),
+        (
+            "$(@path pwd).parent",
+            len("$(@path pwd).parent"),
+            "__dummy_Path__.parent",
+            len("__dummy_Path__.parent"),
+        ),
+        (
+            "$(@paths ls /).pop",
+            len("$(@paths ls /).pop"),
+            "__dummy_list_Path__.pop",
+            len("__dummy_list_Path__.pop"),
+        ),
+        (
+            "$(@json curl -s url).keys",
+            len("$(@json curl -s url).keys"),
+            "__dummy_dict__.keys",
+            len("__dummy_dict__.keys"),
+        ),
+        (
+            "$(@jsonl echo x).pop",
+            len("$(@jsonl echo x).pop"),
+            "__dummy_list_dict__.pop",
+            len("__dummy_list_dict__.pop"),
+        ),
+        (
+            "$(@yaml cat f).keys",
+            len("$(@yaml cat f).keys"),
+            "__dummy_dict__.keys",
+            len("__dummy_dict__.keys"),
+        ),
+        (
+            "$(@noerr @json echo '{}').keys",
+            len("$(@noerr @json echo '{}').keys"),
+            "__dummy_dict__.keys",
+            len("__dummy_dict__.keys"),
+        ),
+        (
+            "$(@noerr ls).spl",
+            len("$(@noerr ls).spl"),
+            "__dummy_str__.spl",
+            len("__dummy_str__.spl"),
+        ),
+        (
+            "$[ls /].x",
+            len("$[ls /].x"),
+            "__dummy_None__.x",
+            len("__dummy_None__.x"),
+        ),
+    ],
+)
+def test_rewrite_xonsh_subexprs(
+    jedi_xontrib, source, cursor_index, expected_source, expected_index
+):
+    transformed_source, transformed_index = jedi_xontrib._rewrite_xonsh_subexprs(
+        source, cursor_index
+    )
+    assert transformed_source == expected_source
+    assert transformed_index == expected_index
+
+
+@pytest.mark.parametrize(
+    "source,expected_rewritten",
+    [
+        ("$(echo hi).spl", "__dummy_str__.spl"),
+        ("!(echo hi).out", "__dummy_CommandPipeline__.out"),
+        ("![echo hi].rtn", "__dummy_HiddenCommandPipeline__.rtn"),
+        ("$(@lines ls).pop", "__dummy_list_str__.pop"),
+        ("$(@json curl).keys", "__dummy_dict__.keys"),
+    ],
+)
+def test_jedi_api_rewrites_subexprs(
+    jedi_xontrib, jedi_mock, xession, source, expected_rewritten
+):
+    context = CompletionContext(python=PythonContext(source, len(source)))
+
+    jedi_xontrib.complete_jedi(context)
+
+    extra_namespace = {
+        "__xonsh__": xession,
+        **jedi_xontrib._JEDI_PLACEHOLDER_VALUES,
+    }
+    try:
+        extra_namespace["_"] = _
+    except NameError:
+        pass
+    namespaces = [{}, extra_namespace]
+
+    assert jedi_mock.Interpreter.call_args_list == [
+        call(expected_rewritten, namespaces)
+    ]
+    assert jedi_mock.Interpreter().complete.call_args_list == [
+        call(1, len(expected_rewritten))
+    ]
+
+
+def test_complete_jedi_offers_string_methods_for_captured_stdout(
+    jedi_xontrib, jedi_mock, monkeypatch
+):
+    monkeypatch.setattr(tools, "get_filter_function", lambda: (lambda *_: True))
+    monkeypatch.setattr(jedi_xontrib, "get_filter_function", lambda: (lambda *_: True))
+
+    comp_mock = MagicMock()
+    comp_mock.type = "function"
+    comp_mock.name = "splitlines"
+    comp_mock.complete = "itlines"
+    sig_mock = MagicMock()
+    sig_mock.to_string.return_value = "splitlines(keepends=False)"
+    comp_mock.get_signatures.return_value = [sig_mock]
+    comp_mock.infer.return_value = []
+
+    jedi_xontrib.XONSH_SPECIAL_TOKENS = []
+    jedi_mock.Interpreter().complete.return_value = [comp_mock]
+
+    completions = jedi_xontrib.complete_jedi(
+        CompletionContext(python=PythonContext("$(echo hi).spl", 14))
+    )
+
+    assert (
+        RichCompletion(
+            "splitlines",
+            display="splitlines()",
+            description="splitlines(keepends=False)",
+            prefix_len=3,
+        )
+        in completions
+    )
 
 
 @pytest.mark.parametrize(
