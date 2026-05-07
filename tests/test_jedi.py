@@ -118,8 +118,8 @@ def test_multiline(jedi_xontrib, jedi_mock, monkeypatch):
                 ("function", "def __get__"),
             ),
             RichCompletion(
-                "from_bytes",
-                display="from_bytes()",
+                "from_bytes(",
+                display="from_bytes(",
                 description="from_bytes(bytes, byteorder, *, signed=False)",
             ),
         ),
