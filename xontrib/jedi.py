@@ -9,7 +9,6 @@ from xonsh.completers import completer
 from xonsh.completers.tools import (
     RichCompletion,
     contextual_completer,
-    get_filter_function,
 )
 from xonsh.parsers.completion_context import CompletionContext
 
@@ -55,7 +54,6 @@ def complete_jedi(context: CompletionContext):
         if path_dir and os.path.isdir(os.path.expanduser(path_dir)):
             return None
 
-    filter_func = get_filter_function()
     jedi.settings.case_insensitive_completion = not XSH.env.get(
         "CASE_SENSITIVE_COMPLETIONS"
     )
@@ -85,10 +83,13 @@ def complete_jedi(context: CompletionContext):
 
     if index > 0:
         last_char = source[index - 1]
+        # Spec-tokens are operators; only prefix matches make sense here.
+        # $XONSH_COMPLETER_MODE="substring_tier" would otherwise offer e.g.
+        # `@$(` when the user types `$`.
         res.update(
             RichCompletion(t, prefix_len=1)
             for t in XONSH_SPECIAL_TOKENS
-            if filter_func(t, last_char)
+            if t.startswith(last_char)
         )
     else:
         res.update(RichCompletion(t, prefix_len=0) for t in XONSH_SPECIAL_TOKENS)
