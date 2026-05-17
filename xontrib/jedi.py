@@ -85,7 +85,7 @@ def complete_jedi(context: CompletionContext):
             return None
 
     jedi.settings.case_insensitive_completion = not XSH.env.get(
-        "CASE_SENSITIVE_COMPLETIONS"
+        "XONTRIB_JEDI_CASE_SENSITIVE"
     )
 
     source = context.python.multiline_code
@@ -193,6 +193,16 @@ def _load_xontrib_(xsh, **_):
             "returns more noisy candidates."
         ),
     )
+    xsh.env.register(
+        "XONTRIB_JEDI_CASE_SENSITIVE",
+        type="bool",
+        default=False,
+        doc=(
+            "When True, jedi's candidate matching is case-sensitive "
+            "(``jedi.settings.case_insensitive_completion = False``). "
+            "Off by default to match jedi's own default behaviour."
+        ),
+    )
     # Jedi ignores leading '@(' and friends, so insert before `python` and
     # then drop the original.
     completer.add_one_completer("jedi_python", complete_jedi, "<python")
@@ -208,3 +218,4 @@ def _unload_xontrib_(xsh, **_):
     # `<path` reproduces the original slot for `python` (last in defaults).
     completer.add_one_completer("python", complete_python, "<path")
     xsh.env.deregister("XONTRIB_JEDI_FUZZY")
+    xsh.env.deregister("XONTRIB_JEDI_CASE_SENSITIVE")

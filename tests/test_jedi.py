@@ -61,15 +61,16 @@ def test_unload_restores_python_completer(
         module._load_xontrib_(xsh=xession)
         assert "jedi_python" in xession.completers
         assert "python" not in xession.completers
-        # the fuzzy env var must be registered on load
-        assert "XONTRIB_JEDI_FUZZY" in xession.env
+        # env vars must be registered on load with bool defaults
         assert xession.env["XONTRIB_JEDI_FUZZY"] is False
+        assert xession.env["XONTRIB_JEDI_CASE_SENSITIVE"] is False
 
         module._unload_xontrib_(xsh=xession)
         assert "jedi_python" not in xession.completers
         assert "python" in xession.completers
         # ... and deregistered on unload
         assert "XONTRIB_JEDI_FUZZY" not in xession.env
+        assert "XONTRIB_JEDI_CASE_SENSITIVE" not in xession.env
     finally:
         del sys.modules[spec.name]
 
@@ -86,6 +87,17 @@ def test_fuzzy_flag_passed_to_jedi(jedi_xontrib, jedi_mock, xession):
     jedi_xontrib.complete_jedi(CompletionContext(python=PythonContext("ooa", 3)))
     last_call = jedi_mock.Interpreter().complete.call_args
     assert last_call.kwargs.get("fuzzy") is False
+
+
+def test_case_sensitive_flag_forwarded(jedi_xontrib, jedi_mock, xession):
+    """$XONTRIB_JEDI_CASE_SENSITIVE flips jedi.settings.case_insensitive_completion."""
+    xession.env["XONTRIB_JEDI_CASE_SENSITIVE"] = True
+    jedi_xontrib.complete_jedi(CompletionContext(python=PythonContext("x", 1)))
+    assert jedi_mock.settings.case_insensitive_completion is False
+
+    xession.env["XONTRIB_JEDI_CASE_SENSITIVE"] = False
+    jedi_xontrib.complete_jedi(CompletionContext(python=PythonContext("x", 1)))
+    assert jedi_mock.settings.case_insensitive_completion is True
 
 
 @pytest.mark.parametrize(

@@ -39,11 +39,16 @@ host xonsh version. Keywords already produced by jedi (`if`, `and`, `lambda`,
 - `$XONTRIB_JEDI_FUZZY` (`bool`, default `False`) — when `True`, jedi is called
   with `fuzzy=True`, so e.g. `ooa` matches `foobar`. Off by default since fuzzy
   mode returns more noisy candidates.
+- `$XONTRIB_JEDI_CASE_SENSITIVE` (`bool`, default `False`) — when `True`,
+  jedi matches candidate names case-sensitively (sets
+  `jedi.settings.case_insensitive_completion = False`). Off by default to
+  match jedi's own default.
 
-Enable fuzzy matching for the current session:
+Examples:
 
 ```xsh
 $XONTRIB_JEDI_FUZZY = True
+$XONTRIB_JEDI_CASE_SENSITIVE = True
 ```
 
 ## Release
