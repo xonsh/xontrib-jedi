@@ -1,9 +1,8 @@
 """Use Jedi as xonsh's python completer."""
 
-# mypy: disable-error-code="attr-defined,name-defined"
-
 import os
 import traceback
+from typing import TYPE_CHECKING
 
 from xonsh.built_ins import XSH
 from xonsh.completers import completer
@@ -13,6 +12,9 @@ from xonsh.completers.tools import (
 )
 from xonsh.parsers.completion_context import CompletionContext
 from xonsh.tools import print_above_prompt
+
+if TYPE_CHECKING:
+    from jedi.api.classes import Completion
 
 
 def _log_jedi_exc(where: str) -> None:
@@ -84,7 +86,7 @@ def complete_jedi(context: CompletionContext):
         if path_dir and os.path.isdir(os.path.expanduser(path_dir)):
             return None
 
-    jedi.settings.case_insensitive_completion = not XSH.env.get(
+    jedi.settings.case_insensitive_completion = not XSH.env.get(  # type: ignore[attr-defined]
         "XONTRIB_JEDI_CASE_SENSITIVE"
     )
 
@@ -96,12 +98,8 @@ def complete_jedi(context: CompletionContext):
     )  # will be `index - (-1) - 1` if there's no newline
 
     extra_ctx = {"__xonsh__": XSH}
-    try:
-        extra_ctx["_"] = _
-    except NameError:
-        pass
 
-    script = jedi.Interpreter(source, [ctx, extra_ctx])
+    script = jedi.Interpreter(source, [ctx, extra_ctx])  # type: ignore[attr-defined]
 
     fuzzy = bool(XSH.env.get("XONTRIB_JEDI_FUZZY"))
 
@@ -127,7 +125,7 @@ def complete_jedi(context: CompletionContext):
     return res
 
 
-def should_complete(comp: jedi.api.classes.Completion):
+def should_complete(comp: "Completion") -> bool:
     """Hide underscore-prefixed names until the user has typed at least
     the leading underscore.
 
@@ -140,7 +138,7 @@ def should_complete(comp: jedi.api.classes.Completion):
     return not name.startswith("_") or len(comp.complete) <= len(name) - 1
 
 
-def create_completion(comp: jedi.api.classes.Completion):
+def create_completion(comp: "Completion") -> RichCompletion:
     """Create a RichCompletion from a Jedi Completion object.
 
     ``get_signatures()`` and ``infer()`` can raise on some types; we fall

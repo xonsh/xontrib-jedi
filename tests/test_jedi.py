@@ -109,12 +109,7 @@ def test_case_sensitive_flag_forwarded(jedi_xontrib, jedi_mock, xession):
 def test_jedi_api(jedi_xontrib, jedi_mock, context, xession):
     jedi_xontrib.complete_jedi(context)
 
-    extra_namespace = {"__xonsh__": xession}
-    try:
-        extra_namespace["_"] = _
-    except NameError:
-        pass
-    namespaces = [{}, extra_namespace]
+    namespaces = [{}, {"__xonsh__": xession}]
 
     line = context.python.multiline_code
     end = context.python.cursor_index
