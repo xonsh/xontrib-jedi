@@ -59,7 +59,7 @@ def complete_jedi(context: CompletionContext):
     )
 
     source = context.python.multiline_code
-    index = context.python.cursor_index
+    index = min(context.python.cursor_index, len(source))
     row = source.count("\n", 0, index) + 1
     column = (
         index - source.rfind("\n", 0, index) - 1
