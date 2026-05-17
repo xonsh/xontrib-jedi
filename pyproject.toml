@@ -3,7 +3,7 @@
 name = "xontrib-jedi"
 version = "0.1.1"
 description = "Improved Xonsh's Python completions using jedi"
-authors = ["Xonsh Dev <xonsh@email.address>"]
+authors = ["Xonsh Dev <xore.004fdbd5c8e6589bdd80944b5b8d4100.show-sender@streams.zulipchat.com>"]
 
 license = "MIT"
 readme = "README.md"
@@ -20,9 +20,11 @@ classifiers = [
     "Topic :: Terminals",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.6",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 
 
