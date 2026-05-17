@@ -3,7 +3,7 @@
 name = "xontrib-jedi"
 version = "0.2.0"
 description = "Improved Xonsh's Python completions using jedi"
-authors = ["Xonsh Dev <xore.004fdbd5c8e6589bdd80944b5b8d4100.show-sender@streams.zulipchat.com>"]
+authors = ["Xonsh Maintainers <xore.004fdbd5c8e6589bdd80944b5b8d4100.show-sender@streams.zulipchat.com>"]
 
 license = "MIT"
 readme = "README.md"
