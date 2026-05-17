@@ -30,9 +30,6 @@ XONSH_SPECIAL_TOKENS = {
 }
 
 
-XONSH_SPECIAL_TOKENS_FIRST = {tok[0] for tok in XONSH_SPECIAL_TOKENS}
-
-
 @contextual_completer
 def complete_jedi(context: CompletionContext):
     """Completes python code using Jedi and xonsh operators"""
