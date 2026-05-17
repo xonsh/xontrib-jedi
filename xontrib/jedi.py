@@ -4,8 +4,10 @@ import os
 import traceback
 from typing import TYPE_CHECKING
 
+import jedi
 from xonsh.built_ins import XSH
 from xonsh.completers import completer
+from xonsh.completers.python import XONSH_EXPR_TOKENS as _XSH_EXPR_TOKENS
 from xonsh.completers.tools import (
     RichCompletion,
     contextual_completer,
@@ -15,6 +17,8 @@ from xonsh.tools import print_above_prompt
 
 if TYPE_CHECKING:
     from jedi.api.classes import Completion
+
+__all__ = ()
 
 
 def _log_jedi_exc(where: str) -> None:
@@ -31,11 +35,6 @@ def _log_jedi_exc(where: str) -> None:
             f"xontrib-jedi: jedi raised in {where}\n{traceback.format_exc()}"
         )
 
-
-__all__ = ()
-
-import jedi
-from xonsh.completers.python import XONSH_EXPR_TOKENS as _XSH_EXPR_TOKENS
 
 # Keywords that jedi already offers via ``comp.type == "keyword"``. We drop
 # them from the imported set so the same option doesn't appear twice in the

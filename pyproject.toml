@@ -39,7 +39,7 @@ Code = "https://github.com/xonsh/xontrib-jedi"
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
 jedi = ">=0.19"
-xonsh = ">=0.17"
+xonsh = ">=0.23"
 
 [tool.poetry.dev-dependencies]
 pytest = ">6.0"
