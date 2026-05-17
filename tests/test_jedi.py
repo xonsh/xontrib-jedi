@@ -61,12 +61,31 @@ def test_unload_restores_python_completer(
         module._load_xontrib_(xsh=xession)
         assert "jedi_python" in xession.completers
         assert "python" not in xession.completers
+        # the fuzzy env var must be registered on load
+        assert "XONTRIB_JEDI_FUZZY" in xession.env
+        assert xession.env["XONTRIB_JEDI_FUZZY"] is False
 
         module._unload_xontrib_(xsh=xession)
         assert "jedi_python" not in xession.completers
         assert "python" in xession.completers
+        # ... and deregistered on unload
+        assert "XONTRIB_JEDI_FUZZY" not in xession.env
     finally:
         del sys.modules[spec.name]
+
+
+def test_fuzzy_flag_passed_to_jedi(jedi_xontrib, jedi_mock, xession):
+    """The xontrib must forward $XONTRIB_JEDI_FUZZY into ``jedi.complete``."""
+    xession.env["XONTRIB_JEDI_FUZZY"] = True
+    jedi_xontrib.complete_jedi(CompletionContext(python=PythonContext("ooa", 3)))
+    last_call = jedi_mock.Interpreter().complete.call_args
+    assert last_call.kwargs.get("fuzzy") is True
+
+    xession.env["XONTRIB_JEDI_FUZZY"] = False
+    jedi_mock.Interpreter().complete.reset_mock()
+    jedi_xontrib.complete_jedi(CompletionContext(python=PythonContext("ooa", 3)))
+    last_call = jedi_mock.Interpreter().complete.call_args
+    assert last_call.kwargs.get("fuzzy") is False
 
 
 @pytest.mark.parametrize(
@@ -89,7 +108,9 @@ def test_jedi_api(jedi_xontrib, jedi_mock, context, xession):
     end = context.python.cursor_index
 
     assert jedi_mock.Interpreter.call_args_list == [call(line, namespaces)]
-    assert jedi_mock.Interpreter().complete.call_args_list == [call(1, end)]
+    assert jedi_mock.Interpreter().complete.call_args_list == [
+        call(1, end, fuzzy=False)
+    ]
 
 
 def test_multiline(jedi_xontrib, jedi_mock, monkeypatch):
@@ -102,7 +123,7 @@ def test_multiline(jedi_xontrib, jedi_mock, monkeypatch):
 
     assert jedi_mock.Interpreter.call_args_list[0][0][0] == complete_document
     assert jedi_mock.Interpreter().complete.call_args_list == [
-        call(2, 5)  # line (one-indexed), column (zero-indexed)
+        call(2, 5, fuzzy=False)  # line (one-indexed), column (zero-indexed)
     ]
 
 

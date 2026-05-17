@@ -87,9 +87,11 @@ def complete_jedi(context: CompletionContext):
 
     script = jedi.Interpreter(source, [ctx, extra_ctx])
 
+    fuzzy = bool(XSH.env.get("XONTRIB_JEDI_FUZZY"))
+
     script_comp = set()
     try:
-        script_comp = script.complete(row, column)
+        script_comp = script.complete(row, column, fuzzy=fuzzy)
     except Exception:
         _log_jedi_exc("script.complete")
 
@@ -165,6 +167,16 @@ def create_completion(comp: jedi.api.classes.Completion):
 
 def _load_xontrib_(xsh, **_):
     """Replace the default ``python`` completer with the jedi-backed one."""
+    xsh.env.register(
+        "XONTRIB_JEDI_FUZZY",
+        type="bool",
+        default=False,
+        doc=(
+            "When True, ``xontrib-jedi`` calls ``jedi.complete(..., fuzzy=True)``, "
+            "so e.g. ``ooa`` matches ``foobar``. Off by default — fuzzy mode "
+            "returns more noisy candidates."
+        ),
+    )
     # Jedi ignores leading '@(' and friends, so insert before `python` and
     # then drop the original.
     completer.add_one_completer("jedi_python", complete_jedi, "<python")
@@ -179,3 +191,4 @@ def _unload_xontrib_(xsh, **_):
     completer.remove_completer("jedi_python")
     # `<path` reproduces the original slot for `python` (last in defaults).
     completer.add_one_completer("python", complete_python, "<path")
+    xsh.env.deregister("XONTRIB_JEDI_FUZZY")

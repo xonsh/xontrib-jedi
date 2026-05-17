@@ -25,6 +25,18 @@ import json
 json.<Tab>
 ```
 
+## Configuration
+
+- `$XONTRIB_JEDI_FUZZY` (`bool`, default `False`) — when `True`, jedi is called
+  with `fuzzy=True`, so e.g. `ooa` matches `foobar`. Off by default since fuzzy
+  mode returns more noisy candidates.
+
+Enable fuzzy matching for the current session:
+
+```xsh
+$XONTRIB_JEDI_FUZZY = True
+```
+
 ## Release
 
 - update the version in `pyproject.toml`
