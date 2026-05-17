@@ -103,7 +103,7 @@ def complete_jedi(context: CompletionContext):
 
     fuzzy = bool(XSH.env.get("XONTRIB_JEDI_FUZZY"))
 
-    script_comp = set()
+    script_comp: list = []
     try:
         script_comp = script.complete(row, column, fuzzy=fuzzy)
     except Exception:
