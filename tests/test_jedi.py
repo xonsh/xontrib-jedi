@@ -302,6 +302,34 @@ def test_bad_completion_does_not_drop_others(jedi_xontrib, jedi_mock):
     assert by_name["bad_name"].description == ""
 
 
+@pytest.mark.parametrize(
+    "env_var",
+    ["XONSH_DEBUG", "XONSH_COMPLETER_TRACE"],
+)
+def test_jedi_error_logged_when_debug_set(
+    jedi_xontrib, jedi_mock, capsys, xession, env_var
+):
+    """Jedi exceptions are silent by default, but surface in stderr when
+    ``$XONSH_DEBUG`` or ``$XONSH_COMPLETER_TRACE`` is set."""
+    xession.env[env_var] = 1
+    jedi_mock.Interpreter().complete.side_effect = RuntimeError("kaboom")
+    jedi_xontrib.complete_jedi(CompletionContext(python=PythonContext("", 0)))
+    err = capsys.readouterr().err
+    assert "xontrib-jedi" in err
+    assert "script.complete" in err
+    assert "kaboom" in err
+
+
+def test_jedi_error_silent_by_default(jedi_xontrib, jedi_mock, capsys, xession):
+    xession.env["XONSH_DEBUG"] = 0
+    xession.env["XONSH_COMPLETER_TRACE"] = 0
+    jedi_mock.Interpreter().complete.side_effect = RuntimeError("kaboom")
+    jedi_xontrib.complete_jedi(CompletionContext(python=PythonContext("", 0)))
+    err = capsys.readouterr().err
+    assert "xontrib-jedi" not in err
+    assert "kaboom" not in err
+
+
 def test_special_tokens(jedi_xontrib):
     assert jedi_xontrib.complete_jedi(
         CompletionContext(python=PythonContext("", 0))

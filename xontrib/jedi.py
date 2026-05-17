@@ -3,6 +3,7 @@
 # mypy: disable-error-code="attr-defined,name-defined"
 
 import os
+import traceback
 
 from xonsh.built_ins import XSH
 from xonsh.completers import completer
@@ -11,6 +12,22 @@ from xonsh.completers.tools import (
     contextual_completer,
 )
 from xonsh.parsers.completion_context import CompletionContext
+from xonsh.tools import print_above_prompt
+
+
+def _log_jedi_exc(where: str) -> None:
+    """Surface a swallowed jedi exception when the user opted in.
+
+    Gated on ``$XONSH_DEBUG`` (general xonsh debugging) or
+    ``$XONSH_COMPLETER_TRACE`` (completer-pipeline debugging). Uses
+    ``print_above_prompt`` so the trace doesn't overwrite the active
+    prompt-toolkit input line.
+    """
+    env = XSH.env or {}
+    if env.get("XONSH_DEBUG") or env.get("XONSH_COMPLETER_TRACE"):
+        print_above_prompt(
+            f"xontrib-jedi: jedi raised in {where}\n{traceback.format_exc()}"
+        )
 
 __all__ = ()
 
@@ -74,7 +91,7 @@ def complete_jedi(context: CompletionContext):
     try:
         script_comp = script.complete(row, column)
     except Exception:
-        pass
+        _log_jedi_exc("script.complete")
 
     res = {create_completion(comp) for comp in script_comp if should_complete(comp)}
 
@@ -142,6 +159,7 @@ def create_completion(comp: jedi.api.classes.Completion):
             prefix_len=prefix_len,
         )
     except Exception:
+        _log_jedi_exc("create_completion")
         return RichCompletion(comp.name)
 
 
