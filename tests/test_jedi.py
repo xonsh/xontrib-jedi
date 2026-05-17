@@ -34,10 +34,13 @@ def completer_mock(monkeypatch, xession):
 
 
 @pytest.fixture
-def jedi_xontrib(monkeypatch, source_path, jedi_mock, completer_mock):
+def jedi_xontrib(monkeypatch, source_path, jedi_mock, completer_mock, xession):
     monkeypatch.syspath_prepend(source_path)
     spec = find_xontrib("jedi")
-    yield importlib.import_module(spec.name)
+    module = importlib.import_module(spec.name)
+    module._load_xontrib_(xsh=xession)
+    yield module
+    module._unload_xontrib_(xsh=xession)
     del sys.modules[spec.name]
 
 
@@ -46,6 +49,24 @@ def test_completer_added(jedi_xontrib, xession):
     assert "python" not in xession.completers
     assert "python_mode" not in xession.completers
     assert "jedi_python" in xession.completers
+
+
+def test_unload_restores_python_completer(
+    monkeypatch, source_path, jedi_mock, completer_mock, xession
+):
+    monkeypatch.syspath_prepend(source_path)
+    spec = find_xontrib("jedi")
+    module = importlib.import_module(spec.name)
+    try:
+        module._load_xontrib_(xsh=xession)
+        assert "jedi_python" in xession.completers
+        assert "python" not in xession.completers
+
+        module._unload_xontrib_(xsh=xession)
+        assert "jedi_python" not in xession.completers
+        assert "python" in xession.completers
+    finally:
+        del sys.modules[spec.name]
 
 
 @pytest.mark.parametrize(

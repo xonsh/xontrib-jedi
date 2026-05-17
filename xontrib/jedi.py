@@ -147,6 +147,19 @@ def create_completion(comp: jedi.api.classes.Completion):
         return RichCompletion(comp.name)
 
 
-# Jedi ignores leading '@(' and friends
-completer.add_one_completer("jedi_python", complete_jedi, "<python")
-completer.remove_completer("python")
+def _load_xontrib_(xsh, **_):
+    """Replace the default ``python`` completer with the jedi-backed one."""
+    # Jedi ignores leading '@(' and friends, so insert before `python` and
+    # then drop the original.
+    completer.add_one_completer("jedi_python", complete_jedi, "<python")
+    completer.remove_completer("python")
+    return {}
+
+
+def _unload_xontrib_(xsh, **_):
+    """Restore the default xonsh ``python`` completer."""
+    from xonsh.completers.python import complete_python
+
+    completer.remove_completer("jedi_python")
+    # `<path` reproduces the original slot for `python` (last in defaults).
+    completer.add_one_completer("python", complete_python, "<path")
