@@ -247,6 +247,30 @@ def test_rich_completions(jedi_xontrib, jedi_mock, completion, rich_completion):
     assert ret_completion.description == rich_completion.description
 
 
+@pytest.mark.parametrize(
+    "name, complete, expected",
+    [
+        # plain names are always shown
+        ("foo", "foo", True),
+        ("foo", "", True),
+        # underscore name: hidden until the leading underscore is typed
+        ("_foo", "_foo", False),  # user typed nothing
+        ("_foo", "foo", True),  # user typed '_'
+        ("_foo", "oo", True),  # user typed '_f'
+        ("_foo", "", True),  # user typed '_foo' fully — still show for description
+        # dunder: same rule
+        ("__init__", "__init__", False),
+        ("__init__", "_init__", True),
+        ("__init__", "", True),
+    ],
+)
+def test_should_complete(jedi_xontrib, name, complete, expected):
+    comp = MagicMock()
+    comp.name = name
+    comp.complete = complete
+    assert jedi_xontrib.should_complete(comp) is expected
+
+
 def test_bad_completion_does_not_drop_others(jedi_xontrib, jedi_mock):
     """If jedi raises on one Completion (e.g. inside ``infer()``), the
     rest of the batch must still come through — with the broken one

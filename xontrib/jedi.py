@@ -95,15 +95,16 @@ def complete_jedi(context: CompletionContext):
 
 
 def should_complete(comp: jedi.api.classes.Completion):
-    """Make sure _* names are completed only when
-    the user writes the first underscore
+    """Hide underscore-prefixed names until the user has typed at least
+    the leading underscore.
+
+    ``comp.complete`` is the tail jedi wants to insert; when its length
+    is less than the name's, the user has already typed the difference.
+    A fully-typed name (``comp.complete == ""``) is still worth showing
+    so that the description / signature ends up in the popup.
     """
     name = comp.name
-    if not name.startswith("_"):
-        return True
-    completion = comp.complete
-    # only if we're not completing the first underscore:
-    return completion and len(completion) <= len(name) - 1
+    return not name.startswith("_") or len(comp.complete) <= len(name) - 1
 
 
 def create_completion(comp: jedi.api.classes.Completion):
