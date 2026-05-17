@@ -44,4 +44,4 @@ $XONTRIB_JEDI_FUZZY = True
 
 ## Credits
 
-This package was created with [xontrib cookiecutter template](https://github.com/xonsh/xontrib-cookiecutter).
+This package was created with [xontrib template](https://github.com/xonsh/xontrib-template).
