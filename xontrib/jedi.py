@@ -119,9 +119,7 @@ def complete_jedi(context: CompletionContext):
         # sense here. $XONSH_COMPLETER_MODE="substring_tier" would otherwise
         # offer e.g. `@$(` when the user types `$`.
         res.update(
-            _spec_token(t, 1)
-            for t in XONSH_SPECIAL_TOKENS
-            if t.startswith(last_char)
+            _spec_token(t, 1) for t in XONSH_SPECIAL_TOKENS if t.startswith(last_char)
         )
     else:
         res.update(_spec_token(t, 0) for t in XONSH_SPECIAL_TOKENS)
