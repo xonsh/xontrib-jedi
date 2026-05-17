@@ -25,6 +25,32 @@ import json
 json.<Tab>
 ```
 
+The xontrib swaps xonsh's built-in `python` completer for `jedi_python`.
+Other completers in the chain (including `xonsh_imp`, which completes
+`__xonsh__.imp.<module>`) are left alone, so they keep working as before.
+
+Operator and shell-syntax tokens (`<=`, `**`, `$(`, `@(`, `,`, …) are pulled
+from xonsh's own `XONSH_EXPR_TOKENS`, so the menu stays in sync with the
+host xonsh version. Keywords already produced by jedi (`if`, `and`, `lambda`,
+…) are filtered out to avoid duplicates.
+
+## Configuration
+
+- `$XONTRIB_JEDI_FUZZY` (`bool`, default `False`) — when `True`, jedi is called
+  with `fuzzy=True`, so e.g. `ooa` matches `foobar`. Off by default since fuzzy
+  mode returns more noisy candidates.
+- `$XONTRIB_JEDI_CASE_SENSITIVE` (`bool`, default `False`) — when `True`,
+  jedi matches candidate names case-sensitively (sets
+  `jedi.settings.case_insensitive_completion = False`). Off by default to
+  match jedi's own default.
+
+Examples:
+
+```xsh
+$XONTRIB_JEDI_FUZZY = True
+$XONTRIB_JEDI_CASE_SENSITIVE = True
+```
+
 ## Release
 
 - update the version in `pyproject.toml`
@@ -32,4 +58,4 @@ json.<Tab>
 
 ## Credits
 
-This package was created with [xontrib cookiecutter template](https://github.com/xonsh/xontrib-cookiecutter).
+This package was created with [xontrib template](https://github.com/xonsh/xontrib-template).
