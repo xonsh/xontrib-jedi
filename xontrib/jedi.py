@@ -29,6 +29,7 @@ def _log_jedi_exc(where: str) -> None:
             f"xontrib-jedi: jedi raised in {where}\n{traceback.format_exc()}"
         )
 
+
 __all__ = ()
 
 import jedi
