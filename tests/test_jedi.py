@@ -363,6 +363,24 @@ def test_special_tokens(jedi_xontrib):
     ) == {"$[", "${", "$("}
 
 
+def test_xonsh_operators_inherited(jedi_xontrib):
+    """The xontrib pulls operator tokens from xonsh.completers.python, so
+    typing ``<`` should suggest ``<=`` and ``<<`` too, not only the bare ``<``.
+    """
+    res = jedi_xontrib.complete_jedi(CompletionContext(python=PythonContext("<", 1)))
+    res_values = {str(c) for c in res}
+    assert {"<", "<=", "<<"}.issubset(res_values)
+
+
+def test_jedi_keywords_not_duplicated(jedi_xontrib):
+    """Keywords (``if``, ``and``, ``lambda``, …) that jedi already covers
+    are dropped from the imported xonsh-token set so they don't show twice.
+    """
+    dropped = {"and", "or", "not", "in", "is", "if", "else", "for", "lambda"}
+    tokens = {str(t) for t in jedi_xontrib.XONSH_SPECIAL_TOKENS}
+    assert dropped.isdisjoint(tokens)
+
+
 @skip_if_on_windows
 def test_no_command_path_completion(jedi_xontrib, completion_context_parse):
     assert jedi_xontrib.complete_jedi(completion_context_parse("./", 2)) is None

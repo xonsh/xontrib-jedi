@@ -33,19 +33,34 @@ def _log_jedi_exc(where: str) -> None:
 __all__ = ()
 
 import jedi
+from xonsh.completers.python import XONSH_EXPR_TOKENS as _XSH_EXPR_TOKENS
+
+# Keywords that jedi already offers via ``comp.type == "keyword"``. We drop
+# them from the imported set so the same option doesn't appear twice in the
+# popup. Operators like ``==``, ``<=``, ``//`` jedi doesn't synthesize, so
+# we keep those.
+_KEYWORDS_FROM_JEDI = {
+    "and",
+    "or",
+    "not",
+    "in",
+    "is",
+    "if",
+    "else",
+    "for",
+    "lambda",
+}
 
 XONSH_SPECIAL_TOKENS = {
-    "?",
-    "??",
-    "$(",
-    "${",
-    "$[",
-    "![",
-    "!(",
-    "@(",
-    "@$(",
-    "@",
+    t for t in _XSH_EXPR_TOKENS if str(t) not in _KEYWORDS_FROM_JEDI
 }
+
+
+def _spec_token(t, prefix_len):
+    """Wrap a token without losing ``append_space`` etc."""
+    if isinstance(t, RichCompletion):
+        return t.replace(prefix_len=prefix_len)
+    return RichCompletion(t, prefix_len=prefix_len)
 
 
 @contextual_completer
@@ -100,16 +115,16 @@ def complete_jedi(context: CompletionContext):
 
     if index > 0:
         last_char = source[index - 1]
-        # Spec-tokens are operators; only prefix matches make sense here.
-        # $XONSH_COMPLETER_MODE="substring_tier" would otherwise offer e.g.
-        # `@$(` when the user types `$`.
+        # Spec-tokens are operators / xonsh syntax; only prefix matches make
+        # sense here. $XONSH_COMPLETER_MODE="substring_tier" would otherwise
+        # offer e.g. `@$(` when the user types `$`.
         res.update(
-            RichCompletion(t, prefix_len=1)
+            _spec_token(t, 1)
             for t in XONSH_SPECIAL_TOKENS
             if t.startswith(last_char)
         )
     else:
-        res.update(RichCompletion(t, prefix_len=0) for t in XONSH_SPECIAL_TOKENS)
+        res.update(_spec_token(t, 0) for t in XONSH_SPECIAL_TOKENS)
 
     return res
 
