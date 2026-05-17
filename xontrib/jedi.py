@@ -110,33 +110,41 @@ def should_complete(comp: jedi.api.classes.Completion):
 
 
 def create_completion(comp: jedi.api.classes.Completion):
-    """Create a RichCompletion from a Jedi Completion object"""
-    comp_type = None
-    description = None
+    """Create a RichCompletion from a Jedi Completion object.
 
-    if comp.type != "instance":
-        sigs = comp.get_signatures()
-        if sigs:
-            comp_type = comp.type
-            description = sigs[0].to_string()
-    if comp_type is None:
-        # jedi doesn't know exactly what this is
-        inf = comp.infer()
-        if inf:
-            comp_type = inf[0].type
-            description = inf[0].description
+    ``get_signatures()`` and ``infer()`` can raise on some types; we fall
+    back to a bare ``RichCompletion(comp.name)`` so one bad completion
+    doesn't drop the rest of the set.
+    """
+    try:
+        comp_type = None
+        description = None
 
-    display = comp.name + ("()" if comp_type == "function" else "")
-    description = description or comp.type
+        if comp.type != "instance":
+            sigs = comp.get_signatures()
+            if sigs:
+                comp_type = comp.type
+                description = sigs[0].to_string()
+        if comp_type is None:
+            # jedi doesn't know exactly what this is
+            inf = comp.infer()
+            if inf:
+                comp_type = inf[0].type
+                description = inf[0].description
 
-    prefix_len = len(comp.name) - len(comp.complete)
+        display = comp.name + ("()" if comp_type == "function" else "")
+        description = description or comp.type
 
-    return RichCompletion(
-        comp.name,
-        display=display,
-        description=description,
-        prefix_len=prefix_len,
-    )
+        prefix_len = len(comp.name) - len(comp.complete)
+
+        return RichCompletion(
+            comp.name,
+            display=display,
+            description=description,
+            prefix_len=prefix_len,
+        )
+    except Exception:
+        return RichCompletion(comp.name)
 
 
 # Jedi ignores leading '@(' and friends

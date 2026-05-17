@@ -226,6 +226,37 @@ def test_rich_completions(jedi_xontrib, jedi_mock, completion, rich_completion):
     assert ret_completion.description == rich_completion.description
 
 
+def test_bad_completion_does_not_drop_others(jedi_xontrib, jedi_mock):
+    """If jedi raises on one Completion (e.g. inside ``infer()``), the
+    rest of the batch must still come through — with the broken one
+    falling back to a bare ``RichCompletion(comp.name)``."""
+    good = MagicMock()
+    good.type = "instance"
+    good.name = "good_name"
+    good.complete = ""
+    good.get_signatures.return_value = []
+    good_inf = MagicMock(type="instance", description="instance int")
+    good.infer.return_value = [good_inf]
+
+    bad = MagicMock()
+    bad.type = "module"
+    bad.name = "bad_name"
+    bad.complete = ""
+    bad.get_signatures.side_effect = RuntimeError("jedi blew up")
+    bad.infer.side_effect = RuntimeError("jedi blew up")
+
+    jedi_xontrib.XONSH_SPECIAL_TOKENS = []
+    jedi_mock.Interpreter().complete.return_value = [good, bad]
+    completions = jedi_xontrib.complete_jedi(
+        CompletionContext(python=PythonContext("", 0))
+    )
+    by_name = {c.value: c for c in completions}
+    assert set(by_name) == {"good_name", "bad_name"}
+    assert by_name["good_name"].description == "instance int"
+    # bad one falls back to bare RichCompletion — no description attached
+    assert by_name["bad_name"].description == ""
+
+
 def test_special_tokens(jedi_xontrib):
     assert jedi_xontrib.complete_jedi(
         CompletionContext(python=PythonContext("", 0))
