@@ -1,5 +1,5 @@
 <p align="center">
-Xonsh Python completions using <a href="https://jedi.readthedocs.io/en/latest/">jedi</a>.
+    Xonsh extension for <a href="https://jedi.readthedocs.io/en/latest/">Jedi</a> support -a powerful, open-source static analysis library for Python that provides high-quality autocompletion and "go-to" functionality for IDEs and text editors.
 </p>
 
 <p align="center">
